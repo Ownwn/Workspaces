@@ -1,5 +1,6 @@
-package com.ownwn.workspaces;
+package com.ownwn.workspaces.client;
 
+import com.ownwn.workspaces.network.PacketHandler;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -14,9 +15,11 @@ public class Keybinds {
             return;
         }
 
-        for (KeyMapping keyMapping : keyMappings) {
+        for (int i = 0; i < keyMappings.length; i++) {
+            KeyMapping keyMapping = keyMappings[i];
+
             if (keyMapping.consumeClick()) {
-                System.out.println("pressed!" + keyMapping.getName());
+                PacketHandler.sendWorkspacePacket(i);
             }
         }
     }

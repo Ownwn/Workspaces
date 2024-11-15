@@ -1,6 +1,11 @@
 package com.ownwn.workspaces;
 
+import com.ownwn.workspaces.client.Keybinds;
+import com.ownwn.workspaces.client.WorkspacesClient;
+import com.ownwn.workspaces.network.PacketHandler;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -10,6 +15,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
+import java.util.Optional;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Workspaces.MODID)
@@ -30,13 +37,25 @@ public class Workspaces
 
         eventBus.register(new WorkspacesClient());
 
+        PacketHandler.load();
 
         ITEMS.register(eventBus);
 
     }
 
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        System.out.println("HELLO from server starting");
+    public static void teleportPlayer(ServerPlayer player, int workspace) {
+        if (player == null || player.getInventory().items == null) {
+            return;
+        }
+
+        Optional<ItemStack> item = player.getInventory().items.stream()
+                .filter(
+                        stack -> stack != null && stack.getItem() instanceof WorkspacePlannerItem
+                ).findFirst();
+        if (item.isEmpty()) {
+            return;
+        }
+
+        ItemStack stack = item.get();
     }
 }

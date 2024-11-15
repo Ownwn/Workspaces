@@ -1,14 +1,11 @@
-package com.ownwn.workspaces;
+package com.ownwn.workspaces.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import cpw.mods.util.Lazy;
+import com.ownwn.workspaces.Workspaces;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.lwjgl.glfw.GLFW;
 
 public class WorkspacesClient {
@@ -31,8 +28,5 @@ public class WorkspacesClient {
             Keybinds.keyMappings[i] = keyMapping;
             event.register(keyMapping);
         }
-
     }
-
-
 }
