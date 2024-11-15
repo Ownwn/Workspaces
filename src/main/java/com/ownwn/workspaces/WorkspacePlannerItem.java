@@ -3,6 +3,7 @@ package com.ownwn.workspaces;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.awt.*;
 import java.util.List;
 
 public class WorkspacePlannerItem extends Item {
@@ -37,7 +39,7 @@ public class WorkspacePlannerItem extends Item {
         }
 
         ItemStack stack = user.getItemInHand(hand);
-        if (stack == null) {
+        if (!(stack.getItem() instanceof WorkspacePlannerItem)) {
             return super.use(level, user, hand);
         }
 
@@ -54,9 +56,6 @@ public class WorkspacePlannerItem extends Item {
             location.putDouble("z", user.position().z);
 
             locations.set(workspaceNum, location);
-
-
-//            locations.getCompound(0).getDouble("x");
 
         } else {
             stack.getOrCreateTag().putInt("workspaceNum", (workspaceNum + 1) % 9);
@@ -75,21 +74,6 @@ public class WorkspacePlannerItem extends Item {
         return oldName.copy().append(Component.literal(" (" + (workspaceNum + 1) + ")"));
     }
 
-    private void setDefaultWorkspaces(CompoundTag tag) {
-
-        ListTag list = new ListTag();
-        for (int i = 0; i < 9; i++) {
-            CompoundTag vec = new CompoundTag();
-            vec.putDouble("x", 0);
-            vec.putDouble("y", 0);
-            vec.putDouble("z", 0);
-            list.add(vec);
-        }
-
-        tag.put("workspaces", list);
-
-    }
-
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, @NotNull List<Component> components, @NotNull TooltipFlag type) {
         CompoundTag tag = stack.getOrCreateTag();
@@ -101,7 +85,7 @@ public class WorkspacePlannerItem extends Item {
         ListTag locations = (ListTag) tag.get("workspaces");
 
         if (locations == null) {
-            System.out.println("null");
+            components.add(Component.literal("Error").withStyle(Style.EMPTY.withColor(Color.red.getRGB())));
             return;
         }
 
@@ -122,4 +106,18 @@ public class WorkspacePlannerItem extends Item {
         }
     }
 
+    private void setDefaultWorkspaces(CompoundTag tag) {
+
+        ListTag list = new ListTag();
+        for (int i = 0; i < 9; i++) {
+            CompoundTag vec = new CompoundTag();
+            vec.putDouble("x", 0);
+            vec.putDouble("y", 0);
+            vec.putDouble("z", 0);
+            list.add(vec);
+        }
+
+        tag.put("workspaces", list);
+
+    }
 }

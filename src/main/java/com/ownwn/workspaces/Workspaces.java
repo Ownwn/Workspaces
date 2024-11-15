@@ -26,7 +26,10 @@ public class Workspaces
         IEventBus eventBus = context.getModEventBus();
 
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(new Keybinds());
+
         eventBus.register(new WorkspacesClient());
+
 
         ITEMS.register(eventBus);
 
