@@ -3,11 +3,14 @@ package com.ownwn.workspaces.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.ownwn.workspaces.Workspaces;
 import net.minecraft.client.KeyMapping;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
+@OnlyIn(Dist.CLIENT)
 public class WorkspacesClient {
 
 

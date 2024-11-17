@@ -3,13 +3,23 @@ package com.ownwn.workspaces;
 import com.ownwn.workspaces.client.Keybinds;
 import com.ownwn.workspaces.client.WorkspacesClient;
 import com.ownwn.workspaces.network.PacketHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -33,18 +43,22 @@ public class Workspaces
         IEventBus eventBus = context.getModEventBus();
 
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(new Keybinds());
 
-        eventBus.register(new WorkspacesClient());
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            MinecraftForge.EVENT_BUS.register(new Keybinds());
+
+            eventBus.register(new WorkspacesClient());
+        });
+
 
         PacketHandler.load();
 
         ITEMS.register(eventBus);
 
     }
-
-    public static void teleportPlayer(ServerPlayer player, int workspace) {
-        if (player == null || player.getInventory().items == null) {
+ // todo stop cross dimensions
+    public static void teleportPlayer(ServerPlayer player, int workspaceNum) {
+        if (player == null) {
             return;
         }
 
@@ -52,10 +66,40 @@ public class Workspaces
                 .filter(
                         stack -> stack != null && stack.getItem() instanceof WorkspacePlannerItem
                 ).findFirst();
-        if (item.isEmpty()) {
+        if (item.isEmpty() || !item.get().hasTag()) {
             return;
         }
 
         ItemStack stack = item.get();
+        CompoundTag tag = stack.getTag();
+
+
+        CompoundTag workspace = WorkspacePlannerItem.getWorkspace(tag, workspaceNum);
+
+        double x = workspace.getDouble("x");
+        double y = workspace.getDouble("y");
+        double z = workspace.getDouble("z");
+
+        float pitch = workspace.getFloat("pitch");
+        float yaw = workspace.getFloat("yaw");
+
+        if (x == 0 && y == 0 && z == 0) {
+            return;
+        }
+//        player.setDeltaMovement(0.0, 0.0, 0.0);
+
+        // todo doesnt work ffs
+        ChunkPos chunkPos = new ChunkPos(BlockPos.containing(x, y, z));
+        ((ServerLevel) player.getCommandSenderWorld()).getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, chunkPos, 1, player.getId());
+
+
+        player.teleportTo(x, y, z);
+        player.setOnGround(true);
+//        player.rotate(pitch, yaw)
+
+       player.setDeltaMovement(0.0, 0.0, 0.0);
+
+
+
     }
 }

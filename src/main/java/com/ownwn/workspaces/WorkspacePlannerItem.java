@@ -38,27 +38,31 @@ public class WorkspacePlannerItem extends Item {
             return super.use(level, user, hand);
         }
 
+
+
         ItemStack stack = user.getItemInHand(hand);
         if (!(stack.getItem() instanceof WorkspacePlannerItem)) {
             return super.use(level, user, hand);
         }
 
-        int workspaceNum = stack.getOrCreateTag().getInt("workspaceNum");
+        CompoundTag tag = stack.getOrCreateTag();
+
+        int workspaceNum = tag.getInt("workspaceNum");
 
         if (user.isCrouching()) {
 
-            ListTag locations = (ListTag) stack.getOrCreateTag().get("workspaces");
+            CompoundTag workspace = getWorkspace(tag, workspaceNum);
 
-            CompoundTag location = locations.getCompound(workspaceNum);
+            ListTag workspaces = getWorkspaceList(tag);
 
-            location.putDouble("x", user.position().x);
-            location.putDouble("y", user.position().y);
-            location.putDouble("z", user.position().z);
 
-            locations.set(workspaceNum, location);
+            updateWorkspaceCoords(workspace, user.position().x, user.position().y, user.position().z);
+            updateWorkspaceRotation(workspace, user.getXRot(), user.getYRot());
+
+            workspaces.set(workspaceNum, workspace);
 
         } else {
-            stack.getOrCreateTag().putInt("workspaceNum", (workspaceNum + 1) % 9);
+            tag.putInt("workspaceNum", (workspaceNum + 1) % 9);
         }
 
         return InteractionResultHolder.success(stack);
@@ -78,11 +82,11 @@ public class WorkspacePlannerItem extends Item {
     public void appendHoverText(ItemStack stack, @Nullable Level level, @NotNull List<Component> components, @NotNull TooltipFlag type) {
         CompoundTag tag = stack.getOrCreateTag();
 
-        if (tag.get("workspaces") == null) {
+        if (!hasValidCoords(tag)) {
             setDefaultWorkspaces(tag);
         }
 
-        ListTag locations = (ListTag) tag.get("workspaces");
+        ListTag locations = getWorkspaceList(tag);
 
         if (locations == null) {
             components.add(Component.literal("Error").withStyle(Style.EMPTY.withColor(Color.red.getRGB())));
@@ -106,18 +110,51 @@ public class WorkspacePlannerItem extends Item {
         }
     }
 
-    private void setDefaultWorkspaces(CompoundTag tag) {
-
-        ListTag list = new ListTag();
-        for (int i = 0; i < 9; i++) {
-            CompoundTag vec = new CompoundTag();
-            vec.putDouble("x", 0);
-            vec.putDouble("y", 0);
-            vec.putDouble("z", 0);
-            list.add(vec);
+    public static CompoundTag getWorkspace(CompoundTag itemTag, int workspaceNum) {
+        if (!hasValidCoords(itemTag)) {
+            setDefaultWorkspaces(itemTag);
         }
 
-        tag.put("workspaces", list);
+        ListTag workspaces = getWorkspaceList(itemTag);
 
+        return workspaces.getCompound(workspaceNum);
+    }
+
+    public static ListTag getWorkspaceList(CompoundTag tag) {
+        return (ListTag) tag.get("workspaces");
+    }
+
+    private void updateWorkspaceCoords(CompoundTag tag, double x, double y, double z) {
+        tag.putDouble("x", x);
+        tag.putDouble("y", y);
+        tag.putDouble("z", z);
+    }
+
+    private void updateWorkspaceRotation(CompoundTag tag, float pitch, float yaw) {
+        tag.putFloat("pitch", pitch);
+        tag.putFloat("yaw", yaw);
+    }
+
+    public static boolean hasValidCoords(CompoundTag tag) {
+        return (tag.get("workspaces") != null);
+    }
+
+    public static void setDefaultWorkspaces(CompoundTag tag) {
+        ListTag workspaceList = new ListTag();
+
+        for (int i = 0; i < 9; i++) {
+            CompoundTag workspace = new CompoundTag();
+            workspace.putDouble("x", 0);
+            workspace.putDouble("y", 0);
+            workspace.putDouble("z", 0);
+
+            workspace.putFloat("pitch", 0);
+            workspace.putFloat("yaw", 0);
+
+
+            workspaceList.add(workspace);
+        }
+
+        tag.put("workspaces", workspaceList);
     }
 }
