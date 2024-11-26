@@ -1,3 +1,5 @@
 {
-    "item.workspaces.workspace_planner": "Workspace Planner"
+    "item.workspaces.workspace_planner": "Workspace Planner",
+    "workspaces.workspace_planner.teleport_error": "You must be in the overworld to teleport!",
+    "workspaces.workspace_planner.use_error": "You must be in the overworld to use this!"
 }

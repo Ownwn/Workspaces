@@ -48,7 +48,7 @@ public class WorkspacePlannerItem extends Item {
         int workspaceNum = tag.getInt("workspaceNum");
 
         if (level.dimension() != Level.OVERWORLD) {
-            Workspaces.sendFailMessage(user, "You must be in the overworld to use this!");
+            Workspaces.sendFailMessage(user, "workspaces.workspace_planner.use_error");
             return InteractionResultHolder.fail(stack);
         }
 

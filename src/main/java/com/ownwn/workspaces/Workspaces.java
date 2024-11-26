@@ -97,7 +97,7 @@ public class Workspaces
             return;
         }
         if (player.level().dimension() != Level.OVERWORLD) {
-            sendFailMessage(player, "You must be in the overworld to teleport!");
+            sendFailMessage(player, "workspaces.workspace_planner.teleport_error");
             return;
         }
 
@@ -109,7 +109,7 @@ public class Workspaces
     }
 
     public static void sendFailMessage(Player player, String message) {
-        player.displayClientMessage(Component.literal(message)
+        player.displayClientMessage(Component.translatable(message)
                 .withStyle(Style.EMPTY.withColor(
                         ChatFormatting.RED
                 )), true);
