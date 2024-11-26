@@ -28,7 +28,6 @@ public class WorkspacePlannerItem extends Item {
                 new Item.Properties()
                         .stacksTo(1)
                         .rarity(Rarity.UNCOMMON)
-
         );
     }
 
@@ -39,7 +38,6 @@ public class WorkspacePlannerItem extends Item {
         }
 
 
-
         ItemStack stack = user.getItemInHand(hand);
         if (!(stack.getItem() instanceof WorkspacePlannerItem)) {
             return super.use(level, user, hand);
@@ -48,6 +46,11 @@ public class WorkspacePlannerItem extends Item {
         CompoundTag tag = stack.getOrCreateTag();
 
         int workspaceNum = tag.getInt("workspaceNum");
+
+        if (level.dimension() != Level.OVERWORLD) {
+            Workspaces.sendFailMessage(user, "You must be in the overworld to use this!");
+            return InteractionResultHolder.fail(stack);
+        }
 
         if (user.isCrouching()) {
 

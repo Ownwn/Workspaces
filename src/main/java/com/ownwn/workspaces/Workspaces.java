@@ -3,17 +3,23 @@ package com.ownwn.workspaces;
 import com.ownwn.workspaces.client.Keybinds;
 import com.ownwn.workspaces.client.WorkspacesClient;
 import com.ownwn.workspaces.network.PacketHandler;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -26,6 +32,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.awt.*;
 import java.util.Optional;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -56,7 +63,6 @@ public class Workspaces
         ITEMS.register(eventBus);
 
     }
- // todo stop cross dimensions
     public static void teleportPlayer(ServerPlayer player, int workspaceNum) {
         if (player == null) {
             return;
@@ -86,20 +92,26 @@ public class Workspaces
         if (x == 0 && y == 0 && z == 0) {
             return;
         }
-//        player.setDeltaMovement(0.0, 0.0, 0.0);
 
-        // todo doesnt work ffs
-        ChunkPos chunkPos = new ChunkPos(BlockPos.containing(x, y, z));
-        ((ServerLevel) player.getCommandSenderWorld()).getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, chunkPos, 1, player.getId());
+        if (!(player.level() instanceof ServerLevel level)) {
+            return;
+        }
+        if (player.level().dimension() != Level.OVERWORLD) {
+            sendFailMessage(player, "You must be in the overworld to teleport!");
+            return;
+        }
 
+        // make sure chunk is loaded, hopefully prevent "moved too quickly!" problems
+        level.getChunkAt(BlockPos.containing(x, y, z));
 
-        player.teleportTo(x, y, z);
-        player.setOnGround(true);
-//        player.rotate(pitch, yaw)
+        // why the hell is it yaw then pitch?
+        player.teleportTo(level, x, y, z, yaw, pitch);
+    }
 
-       player.setDeltaMovement(0.0, 0.0, 0.0);
-
-
-
+    public static void sendFailMessage(Player player, String message) {
+        player.displayClientMessage(Component.literal(message)
+                .withStyle(Style.EMPTY.withColor(
+                        ChatFormatting.RED
+                )), true);
     }
 }
